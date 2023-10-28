@@ -1,3 +1,15 @@
+<?php
+session_start();
+
+// Check if the user is logged in and has the employee-user user_category
+if (!isset($_SESSION['username']) || $_SESSION['user_category'] !== 'employee-user') {
+    header("Location: login.php?error=unauthorized");
+    exit();
+}
+
+// Employee user dashboard content goes here
+?>
+
 <!DOCTYPE html>
   <!-- Coding by CodingLab | www.codinglabweb.com -->
 <html lang="en">
@@ -47,9 +59,9 @@
                     </li>
 
                     <li class="nav-link">
-                        <a href="#">
+                        <a href="/payroll/journal/index_payment/index_payment.php">
                             <i class='bx bx-bar-chart-alt-2 icon' ></i>
-                            <span class="text nav-text">Revenue</span>
+                            <span class="text nav-text">Index Payment</span>
                         </a>
                     </li>
 
@@ -75,9 +87,9 @@
                     </li>
 
                     <li class="nav-link">
-                        <a href="#">
+                        <a href="/payroll/journal/users/users.php">
                             <i class='bx bx-wallet icon' ></i>
-                            <span class="text nav-text">Wallets</span>
+                            <span class="text nav-text">User Employees</span>
                         </a>
                     </li>
 
@@ -115,31 +127,31 @@
 
     <script>
         const body = document.querySelector('body'),
-      sidebar = body.querySelector('nav'),
-      toggle = body.querySelector(".toggle"),
-      searchBtn = body.querySelector(".search-box"),
-      modeSwitch = body.querySelector(".toggle-switch"),
-      modeText = body.querySelector(".mode-text");
+        sidebar = body.querySelector('nav'),
+        toggle = body.querySelector(".toggle"),
+        searchBtn = body.querySelector(".search-box"),
+        modeSwitch = body.querySelector(".toggle-switch"),
+        modeText = body.querySelector(".mode-text");
 
 
-toggle.addEventListener("click" , () =>{
-    sidebar.classList.toggle("close");
-})
+        toggle.addEventListener("click" , () =>{
+            sidebar.classList.toggle("close");
+        })
 
-searchBtn.addEventListener("click" , () =>{
-    sidebar.classList.remove("close");
-})
+        searchBtn.addEventListener("click" , () =>{
+            sidebar.classList.remove("close");
+        })
 
-modeSwitch.addEventListener("click" , () =>{
-    body.classList.toggle("dark");
-    
-    if(body.classList.contains("dark")){
-        modeText.innerText = "Light mode";
-    }else{
-        modeText.innerText = "Dark mode";
-        
-    }
-});
+        modeSwitch.addEventListener("click" , () =>{
+            body.classList.toggle("dark");
+            
+            if(body.classList.contains("dark")){
+                modeText.innerText = "Light mode";
+            }else{
+                modeText.innerText = "Dark mode";
+                
+            }
+        });
     </script>
 
 </body>

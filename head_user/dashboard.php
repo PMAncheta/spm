@@ -1,3 +1,15 @@
+<?php
+session_start();
+
+// Check if the user is logged in and has the head-user user_category
+if (!isset($_SESSION['username']) || $_SESSION['user_category'] !== 'head-user') {
+    header("Location: login.php?error=unauthorized");
+    exit();
+}
+
+// Head user dashboard content goes here
+?>
+
 <!DOCTYPE html>
   <!-- Coding by CodingLab | www.codinglabweb.com -->
 <html lang="en">
@@ -40,16 +52,16 @@
 
                 <ul class="menu-links">
                     <li class="nav-link">
-                        <a href="/payroll/admin/dashboard.php">
+                        <a href="#">
                             <i class='bx bx-home-alt icon' ></i>
                             <span class="text nav-text">Dashboard</span>
                         </a>
                     </li>
 
                     <li class="nav-link">
-                        <a href="#">
+                        <a href="/payroll/journal/index_payment/index_payment.php">
                             <i class='bx bx-bar-chart-alt-2 icon' ></i>
-                            <span class="text nav-text">Revenue</span>
+                            <span class="text nav-text">Index Payment</span>
                         </a>
                     </li>
 
@@ -75,9 +87,9 @@
                     </li>
 
                     <li class="nav-link">
-                        <a href="#">
+                        <a href="/payroll/journal/users/users.php">
                             <i class='bx bx-wallet icon' ></i>
-                            <span class="text nav-text">Wallets</span>
+                            <span class="text nav-text">User Employees</span>
                         </a>
                     </li>
 
@@ -111,100 +123,36 @@
 
     <section class="home">
         <div class="text">Dashboard Sidebar</div>
-        <!DOCTYPE html>
-<html>
-<head>
-    <title>Payments Details</title>
-</head>
-<body>
-    <table border="1">
-        <tr>
-        <td colspan="3" style="text-align: center;">INDEX OF PAYMENT</td>
-        </tr>
-        <tr>
-            <td>LGU  : <input type="text" name="LGU " id="name"></td>
-        </tr>
-        <tr>
-            <td>FUND: <input type="text" name="FUND" id="lgu"></td>
-        </tr>
-        <tr>
-            <th>Creditor</th>
-            <td>  <input type="text" name=" " id="name"></td>
-            <th>Address</th>
-            <td>  <input type="text" name=" " id="name"></td>
-            <th>Employee No. </th>
-            <td>  <input type="text" name=" " id="name"></td>
-        <td>
-            <th>TIN :</th>
-            <td>  <input type="text" name=" " id="name"></td>
-        </td>
-        </tr>
-        <tr>
-            <th>Date</th>
-            <th>Reference</th>
-            <th>Particular</th>
-            <th>Extra1</th>
-            <th>Extra2</th>
-        </tr>
-        <?php
-        $data = [
-            ['2023-10-23', 'Ref1', 'Particular 1', 'Extra Data 1', 'Extra Data 2'],
-            ['2023-10-24', 'Ref2', 'Particular 2', 'Extra Data 3', 'Extra Data 4'],
-            ['2023-10-25', 'Ref3', 'Particular 3', 'Extra Data 5', 'Extra Data 6'],
-        ];
-
-        // Loop through the data to populate the table rows
-        foreach ($data as $row) {
-            echo "<tr>";
-            echo "<td>" . $row[0] . "</td>";
-            echo "<td>" . $row[1] . "</td>";
-            echo "<td>" . $row[2] . "</td>";
-            echo "<td>" . $row[3] . "</td>";
-            echo "<td>" . $row[4] . "</td>";
-            echo "</tr>";
-        }
-        ?>
-    </table>
-</body>
-</html>
-
     </section>
-
-    <div></div>
-        
-    </div>
-
-
 
     <script>
         const body = document.querySelector('body'),
-      sidebar = body.querySelector('nav'),
-      toggle = body.querySelector(".toggle"),
-      searchBtn = body.querySelector(".search-box"),
-      modeSwitch = body.querySelector(".toggle-switch"),
-      modeText = body.querySelector(".mode-text");
+        sidebar = body.querySelector('nav'),
+        toggle = body.querySelector(".toggle"),
+        searchBtn = body.querySelector(".search-box"),
+        modeSwitch = body.querySelector(".toggle-switch"),
+        modeText = body.querySelector(".mode-text");
 
 
-toggle.addEventListener("click" , () =>{
-    sidebar.classList.toggle("close");
-})
+        toggle.addEventListener("click" , () =>{
+            sidebar.classList.toggle("close");
+        })
 
-searchBtn.addEventListener("click" , () =>{
-    sidebar.classList.remove("close");
-})
+        searchBtn.addEventListener("click" , () =>{
+            sidebar.classList.remove("close");
+        })
 
-modeSwitch.addEventListener("click" , () =>{
-    body.classList.toggle("dark");
-    
-    if(body.classList.contains("dark")){
-        modeText.innerText = "Light mode";
-    }else{
-        modeText.innerText = "Dark mode";
-        
-    }
-});
+        modeSwitch.addEventListener("click" , () =>{
+            body.classList.toggle("dark");
+            
+            if(body.classList.contains("dark")){
+                modeText.innerText = "Light mode";
+            }else{
+                modeText.innerText = "Dark mode";
+                
+            }
+        });
     </script>
 
 </body>
 </html>
-

@@ -40,6 +40,13 @@
             <input class="form-input" type="email" name="email" placeholder="Email" required><br>
             <input class="form-input" type="password" name="password" placeholder="Password" required><br>
 
+            <label for="user_category">Select Role:</label>
+            <select class="form-select" name="user_category" required>
+                <option value="admin">Admin</option>
+                <option value="head-user">Head User</option>
+                <option value="employee-user">Employee User</option>
+            </select><br>
+
             <p>Already an account sign up <a href="login.php">here</a>
             <input class="form-btn" type="submit" name="register" value="Register">
         </form>

@@ -1,3 +1,24 @@
+<?php
+// Include the configuration file
+include 'config.php';
+
+// Define the deactivateAccount() function
+function deactivateAccount($username) {
+    global $pdo; // Use the global $pdo variable from the config.php file
+    $stmt = $pdo->prepare("UPDATE rgstn SET status = 0 WHERE username = :username");
+    $stmt->bindParam(':username', $username);
+    $stmt->execute();
+}
+
+// Define the activateAccount() function
+function activateAccount($username) {
+    global $pdo; // Use the global $pdo variable from the config.php file
+    $stmt = $pdo->prepare("UPDATE rgstn SET status = 1 WHERE username = :username");
+    $stmt->bindParam(':username', $username);
+    $stmt->execute();
+}
+?>
+
 <!DOCTYPE html>
   <!-- Coding by CodingLab | www.codinglabweb.com -->
 <html lang="en">
@@ -40,7 +61,7 @@
 
                 <ul class="menu-links">
                     <li class="nav-link">
-                        <a href="/payroll/admin/dashboard.php">
+                        <a href="/payroll/journal/dashboard.php">
                             <i class='bx bx-home-alt icon' ></i>
                             <span class="text nav-text">Dashboard</span>
                         </a>
@@ -75,9 +96,9 @@
                     </li>
 
                     <li class="nav-link">
-                        <a href="#">
-                            <i class='bx bx-wallet icon' ></i>
-                            <span class="text nav-text">Wallets</span>
+                        <a href="/payroll/journal/users/users.php">
+                            <i class='bx bx-user icon' ></i>
+                            <span class="text nav-text">User Employees</span>
                         </a>
                     </li>
 
@@ -110,101 +131,80 @@
     </nav>
 
     <section class="home">
-        <div class="text">Dashboard Sidebar</div>
-        <!DOCTYPE html>
-<html>
-<head>
-    <title>Payments Details</title>
-</head>
-<body>
-    <table border="1">
-        <tr>
-        <td colspan="3" style="text-align: center;">INDEX OF PAYMENT</td>
-        </tr>
-        <tr>
-            <td>LGU  : <input type="text" name="LGU " id="name"></td>
-        </tr>
-        <tr>
-            <td>FUND: <input type="text" name="FUND" id="lgu"></td>
-        </tr>
-        <tr>
-            <th>Creditor</th>
-            <td>  <input type="text" name=" " id="name"></td>
-            <th>Address</th>
-            <td>  <input type="text" name=" " id="name"></td>
-            <th>Employee No. </th>
-            <td>  <input type="text" name=" " id="name"></td>
-        <td>
-            <th>TIN :</th>
-            <td>  <input type="text" name=" " id="name"></td>
-        </td>
-        </tr>
-        <tr>
-            <th>Date</th>
-            <th>Reference</th>
-            <th>Particular</th>
-            <th>Extra1</th>
-            <th>Extra2</th>
-        </tr>
-        <?php
-        $data = [
-            ['2023-10-23', 'Ref1', 'Particular 1', 'Extra Data 1', 'Extra Data 2'],
-            ['2023-10-24', 'Ref2', 'Particular 2', 'Extra Data 3', 'Extra Data 4'],
-            ['2023-10-25', 'Ref3', 'Particular 3', 'Extra Data 5', 'Extra Data 6'],
-        ];
+        <div class="text">Users Account</div>
 
-        // Loop through the data to populate the table rows
-        foreach ($data as $row) {
-            echo "<tr>";
-            echo "<td>" . $row[0] . "</td>";
-            echo "<td>" . $row[1] . "</td>";
-            echo "<td>" . $row[2] . "</td>";
-            echo "<td>" . $row[3] . "</td>";
-            echo "<td>" . $row[4] . "</td>";
-            echo "</tr>";
-        }
-        ?>
-    </table>
-</body>
-</html>
+        <ul class="user-list">
+            <?php
+            include 'config.php';
+            session_start();
 
+            if ($_SESSION['user_category'] !== 'admin') {
+                header("Location: login.php");
+                exit();
+            }
+
+            // Handle account activation/deactivation logic
+            if (isset($_GET['action']) && isset($_GET['username'])) {
+                $action = $_GET['action'];
+                $username = $_GET['username'];
+
+                if ($action === 'activate') {
+                    activateAccount($username);
+                    echo "<p>Account for username '$username' has been activated.</p>";
+                } elseif ($action === 'deactivate') {
+                    deactivateAccount($username);
+                    echo "<p>Account for username '$username' has been deactivated.</p>";
+                }
+            }
+
+            // Fetch and display the list of users
+            $stmt = $pdo->prepare("SELECT username, status FROM rgstn");
+            $stmt->execute();
+            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($users as $user) {
+                $username = $user['username'];
+                $status = $user['status'];
+                echo "<li>$username (Status: " . ($status == 1 ? 'Active' : 'Inactive') . ")";
+                if ($status == 1) {
+                    echo " - <a href='admin_panel.php?action=deactivate&username=$username'>Deactivate</a>";
+                } else {
+                    echo " - <a href='admin_panel.php?action=activate&username=$username'>Activate</a>";
+                }
+                echo "</li>";
+            }
+            ?>
+        </ul>
     </section>
-
-    <div></div>
-        
-    </div>
-
-
 
     <script>
         const body = document.querySelector('body'),
-      sidebar = body.querySelector('nav'),
-      toggle = body.querySelector(".toggle"),
-      searchBtn = body.querySelector(".search-box"),
-      modeSwitch = body.querySelector(".toggle-switch"),
-      modeText = body.querySelector(".mode-text");
+        sidebar = body.querySelector('nav'),
+        toggle = body.querySelector(".toggle"),
+        searchBtn = body.querySelector(".search-box"),
+        modeSwitch = body.querySelector(".toggle-switch"),
+        modeText = body.querySelector(".mode-text");
 
 
-toggle.addEventListener("click" , () =>{
-    sidebar.classList.toggle("close");
-})
+        toggle.addEventListener("click" , () =>{
+            sidebar.classList.toggle("close");
+        })
 
-searchBtn.addEventListener("click" , () =>{
-    sidebar.classList.remove("close");
-})
+        searchBtn.addEventListener("click" , () =>{
+            sidebar.classList.remove("close");
+        })
 
-modeSwitch.addEventListener("click" , () =>{
-    body.classList.toggle("dark");
-    
-    if(body.classList.contains("dark")){
-        modeText.innerText = "Light mode";
-    }else{
-        modeText.innerText = "Dark mode";
-        
-    }
-});
+        modeSwitch.addEventListener("click" , () =>{
+            body.classList.toggle("dark");
+            
+            if(body.classList.contains("dark")){
+                modeText.innerText = "Light mode";
+            }else{
+                modeText.innerText = "Dark mode";
+                
+            }
+        });
     </script>
 
 </body>
 </html>
-

@@ -15,6 +15,9 @@
         if (isset($_GET['success']) && $_GET['success'] == 'true') {
             echo "<div class='success-message'>Registration successful! You can now log in.</div>";
         }
+        if (isset($_GET['error']) && $_GET['error'] == 'account_deactivated') {
+            echo "<div class='error-message'>Error: Your account has been deactivated due to multiple login attempts. Please contact support for assistance.</div>";
+        }
         ?>
         <form method="post" action="regConfig.php">
             <input class="form-input" type="text" name="username" placeholder="Username" required><br>
