@@ -4,7 +4,7 @@ include 'config.php';
 
 // Define the deactivateAccount() function
 function deactivateAccount($username) {
-    global $pdo; // Use the global $pdo variable from the config.php file
+    global $pdo;
     $stmt = $pdo->prepare("UPDATE rgstn SET status = 0 WHERE username = :username");
     $stmt->bindParam(':username', $username);
     $stmt->execute();
@@ -12,8 +12,8 @@ function deactivateAccount($username) {
 
 // Define the activateAccount() function
 function activateAccount($username) {
-    global $pdo; // Use the global $pdo variable from the config.php file
-    $stmt = $pdo->prepare("UPDATE rgstn SET status = 1 WHERE username = :username");
+    global $pdo;
+    $stmt = $pdo->prepare("UPDATE rgstn SET status = 1, login_attempts = 0 WHERE username = :username");
     $stmt->bindParam(':username', $username);
     $stmt->execute();
 }
@@ -147,13 +147,19 @@ function activateAccount($username) {
             if (isset($_GET['action']) && isset($_GET['username'])) {
                 $action = $_GET['action'];
                 $username = $_GET['username'];
-
-                if ($action === 'activate') {
-                    activateAccount($username);
-                    echo "<p>Account for username '$username' has been activated.</p>";
-                } elseif ($action === 'deactivate') {
-                    deactivateAccount($username);
-                    echo "<p>Account for username '$username' has been deactivated.</p>";
+            
+                if ($_SESSION['user_category'] === 'admin') {
+                    if ($action === 'activate') {
+                        // Activate the account
+                        activateAccount($username);
+                        echo "<p>Account for username '$username' has been activated.</p>";
+                    } elseif ($action === 'deactivate') {
+                        // Deactivate the account
+                        deactivateAccount($username);
+                        echo "<p>Account for username '$username' has been deactivated.</p>";
+                    }
+                } else {
+                    echo "Access denied. You don't have permission to perform this action.";
                 }
             }
 
@@ -166,13 +172,17 @@ function activateAccount($username) {
                 $username = $user['username'];
                 $status = $user['status'];
                 echo "<li>$username (Status: " . ($status == 1 ? 'Active' : 'Inactive') . ")";
+        
+                // Check if the account is active
                 if ($status == 1) {
+                    // Show Deactivate link for active accounts
                     echo " - <a href='admin_panel.php?action=deactivate&username=$username'>Deactivate</a>";
                 } else {
+                    // Show Activate link for inactive accounts
                     echo " - <a href='admin_panel.php?action=activate&username=$username'>Activate</a>";
                 }
                 echo "</li>";
-            }
+            }       
             ?>
         </ul>
     </section>

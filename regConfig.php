@@ -6,45 +6,38 @@ include 'config.php'; // Include the database configuration file
 function trackLoginAttempts($username) {
     global $pdo;
 
-    // Get the current number of login attempts
-    $sql = "SELECT login_attempts FROM rgstn WHERE username = :username";
-    $stmt = $pdo->prepare($sql);
+    // Check if the user is an admin, if yes, do not track login attempts
+    $stmt = $pdo->prepare("SELECT user_category, login_attempts FROM rgstn WHERE username = :username");
     $stmt->bindParam(':username', $username);
     $stmt->execute();
-    $loginAttempts = $stmt->fetchColumn();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Check if the provided credentials are correct
-    $sql = "SELECT password FROM rgstn WHERE username = :username";
-    $stmt = $pdo->prepare($sql);
-    $stmt->bindParam(':username', $username);
-    $stmt->execute();
-    $hashedPassword = $stmt->fetchColumn();
-
-    // Verify the password if the username exists
-    if ($hashedPassword && password_verify($_POST['password'], $hashedPassword)) {
-        // Correct login, reset login attempts to 0
-        $sql = "UPDATE rgstn SET login_attempts = 0 WHERE username = :username";
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':username', $username);
-        $stmt->execute();
-        return false; // No need to deactivate the account, correct login
-    } else {
-        // Incorrect login attempt, increment login attempts
-        $sql = "UPDATE rgstn SET login_attempts = login_attempts + 1 WHERE username = :username";
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':username', $username);
-        $stmt->execute();
-
-        // Check if login attempts exceed the limit
-        if ($loginAttempts >= 3) {
-            deactivateAccount($username);
-            return true; // Account deactivated
-        }
-
-        return false; // Login attempts below limit, incorrect login
+    if ($result['user_category'] === 'admin') {
+        return false;
     }
-}
 
+    // Increment login attempts
+    $loginAttempts = $result['login_attempts'] + 1;
+    $sql = "UPDATE rgstn SET login_attempts = :loginAttempts WHERE username = :username";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':loginAttempts', $loginAttempts);
+    $stmt->bindParam(':username', $username);
+    $stmt->execute();
+
+    // Check if login attempts exceed the limit
+    if ($loginAttempts >= 3) {
+        // Deactivate the account
+        $sql = "UPDATE rgstn SET status = 0 WHERE username = :username";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(':username', $username);
+        $stmt->execute();
+        header("Location: login.php?success=true");
+        
+        return true; // Account deactivated
+    }
+
+    return false; // Login attempts below limit, incorrect login
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
@@ -102,8 +95,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
             // Your SQL query to insert data into the users table
-            $sql = "INSERT INTO rgstn (first_name, middle_name, last_name, prefix, username, email, password, user_category, status) 
-            VALUES (:first_name, :middle_name, :last_name, :prefix, :username, :email, :password, :user_category, 1)";
+            $sql = "INSERT INTO rgstn (first_name, middle_name, last_name, prefix, username, email, password, user_category, status, login_attempts) 
+            VALUES (:first_name, :middle_name, :last_name, :prefix, :username, :email, :password, :user_category, 1, 0)";
 
             // Prepare the SQL statement
             $stmt = $pdo->prepare($sql);
@@ -133,7 +126,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Close the database connection
         $pdo = null;
-    } elseif (isset($_POST["login"])) {
+    }
+    
+    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["login"])) {
         // User login logic
         $username = $_POST["username"];
         $password = $_POST["password"];
@@ -149,20 +144,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit();
         }
 
-        // Check login attempts and deactivate account if exceeded limit
-        if (trackLoginAttempts($username)) {
-            header("Location: login.php?error=account_deactivated");
-            exit();
-        }
-
         try {
-            // Establishing the database connection
-            $pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname", $db_user, $db_password);
-            // Set the PDO error mode to exception
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
             // Your SQL query to retrieve user data based on the username
-            $sql = "SELECT * FROM rgstn WHERE username = :username";
+            $sql = "SELECT * FROM rgstn WHERE username = :username AND status = 1";
             $stmt = $pdo->prepare($sql);
             $stmt->bindParam(':username', $username);
             $stmt->execute();
@@ -171,6 +155,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($user && password_verify($password, $user['password'])) {
                 $_SESSION['username'] = $username;
                 $_SESSION['user_category'] = $user['user_category']; // Set the user role in the session
+
+                // Reset login attempts to 0 when user successfully logs in
+                $resetLoginAttemptsSql = "UPDATE rgstn SET login_attempts = 0 WHERE username = :username";
+                $resetLoginAttemptsStmt = $pdo->prepare($resetLoginAttemptsSql);
+                $resetLoginAttemptsStmt->bindParam(':username', $username);
+                $resetLoginAttemptsStmt->execute();
             
                 // Determine user category based on role
                 if ($_SESSION['user_category'] === 'admin') {
@@ -198,6 +188,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
             } else {
                 // Invalid username or password, redirect back to login page with an error message
+                trackLoginAttempts($username); // Increment login attempts
                 header("Location: login.php?error=invalid_credentials");
                 exit();
             }
