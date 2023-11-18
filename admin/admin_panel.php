@@ -82,21 +82,21 @@ function activateAccount($username) {
                     </li>
 
                     <li class="nav-link">
-                        <a href="#">
+                        <a href="/payroll/admin/showSLR.php">
                             <i class='bx bx-pie-chart-alt icon' ></i>
                             <span class="text nav-text">Analytics</span>
                         </a>
                     </li>
 
                     <li class="nav-link">
-                        <a href="#">
+                        <a href="/payroll/admin/SLR.php">
                             <i class='bx bx-heart icon' ></i>
-                            <span class="text nav-text">Likes</span>
+                            <span class="text nav-text">Salary Loan Remittance</span>
                         </a>
                     </li>
 
                     <li class="nav-link">
-                        <a href="/payroll/journal/users/users.php">
+                        <a href="/payroll/admin/admin_panel.php">
                             <i class='bx bx-user icon' ></i>
                             <span class="text nav-text">User Employees</span>
                         </a>
