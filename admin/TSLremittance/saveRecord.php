@@ -1,6 +1,9 @@
 <?php
 include('config.php');
 
+error_log('Data received: ' . print_r($_POST['data'], true));
+error_log('ID received: ' . print_r($_POST['id'], true));
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = $_POST['id'];
     $data = json_decode($_POST['data'], true);
